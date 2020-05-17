@@ -1,0 +1,43 @@
+import xml.etree.ElementTree as ET
+import xlsxwriter
+import os
+
+#遍历当前某一类的文件(不包含子文件夹)
+lst=[]#文件列表
+mypath=os.getcwd()#获取当前文件的路径
+for f in os.listdir(mypath):
+       if f.endswith(".svg"):
+        #print(os.path.join(root,f))
+        #ls=os.path.join(mypath,f)
+        #print(ls)#筛选出svg文件
+        lst.append(f)
+        #print(lst)
+        
+#如何将当前文件夹下的所有svg依次加载，并一次提取所有热点写入excel
+#获取所有svg名称，以list的形式存储对其遍历可实现多文件的热点提取
+
+#lst=['1.svg','2.svg'] 
+
+lt1=[]#热点列表
+th=[]#图号列表
+for i in range(len(lst)):#1.遍历列表中的元素的个数（遍历的方法）
+    svg=lst[i]    
+# for i in range(0,2):#2.需要指定svg的个数的方法
+    # svg=lst[i]
+    tree = ET.parse(svg)
+    root = tree.getroot()
+    for x in root.iterfind('.//{http://www.w3.org/2000/svg}g[@id="Hot_Point"]'):
+          for y in x.iterfind('{http://www.w3.org/2000/svg}g'):
+             id=y.get('id')  
+             lt1.append(id)
+             th.append(svg)
+             
+#如何实现统计每个svg热点的个数，并写入到对应的B行？
+workbook = xlsxwriter.Workbook('热点提取.xlsx')    
+worksheet = workbook.add_worksheet('sheet1')       
+headings = ['热点','图号']                                                              
+worksheet.write_row('A1',headings)
+worksheet.write_column('A2',lt1) 
+worksheet.write_column('B2',th)                  
+workbook.close()
+print("恭喜，热点提取完成！")
